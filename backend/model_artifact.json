@@ -1,0 +1,43 @@
+{
+  "features": [
+    "peak_amplitude",
+    "rms",
+    "zero_crossing_rate",
+    "dominant_frequency_hz",
+    "decay_envelope"
+  ],
+  "labels": [
+    "normal",
+    "event"
+  ],
+  "mean": [
+    0.7731125168750007,
+    0.21261405574999998,
+    0.3912274011250007,
+    14.8676875,
+    0.4318951993749996
+  ],
+  "scale": [
+    0.6318203438987617,
+    0.1581389292811698,
+    0.11900309218426443,
+    13.67522713348279,
+    0.37421995918699114
+  ],
+  "coefficients": [
+    [
+      3.4654152896956796,
+      4.661618550079025,
+      -1.958769973951566,
+      0.08809171552743462,
+      4.828110009113845
+    ]
+  ],
+  "intercepts": [
+    4.485937139407084
+  ],
+  "training_samples": 8000,
+  "validation_samples": 2000,
+  "validation_accuracy": 0.9995,
+  "validation_balanced_accuracy": 0.9995
+}

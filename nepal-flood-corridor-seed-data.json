@@ -1,0 +1,25 @@
+{
+  "region": "Trishuli–Bhote Koshi flood corridor, Rasuwa/Nuwakot, Nepal",
+  "updated_at": "2026-01-15T00:00:00Z",
+  "nodes": [
+    {"id": "BD-001", "name": "Rasuwa Glacier Gate", "lat": 28.18, "lng": 85.31, "elevation_m": 2650, "status": "online", "battery_pct": 92, "last_seen": "2026-01-15T06:42:00Z"},
+    {"id": "BD-002", "name": "Syabrubesi", "lat": 28.16, "lng": 85.28, "elevation_m": 1460, "status": "online", "battery_pct": 78, "last_seen": "2026-01-15T06:40:00Z"},
+    {"id": "BD-003", "name": "Dhunche", "lat": 28.11, "lng": 85.29, "elevation_m": 1950, "status": "warning", "battery_pct": 64, "last_seen": "2026-01-15T06:39:00Z"},
+    {"id": "BD-004", "name": "Rasuwagadhi", "lat": 28.12, "lng": 85.36, "elevation_m": 1850, "status": "online", "battery_pct": 86, "last_seen": "2026-01-15T06:42:00Z"},
+    {"id": "BD-005", "name": "Trishuli Bazaar", "lat": 27.99, "lng": 85.16, "elevation_m": 720, "status": "offline", "battery_pct": 31, "last_seen": "2026-01-15T05:58:00Z"},
+    {"id": "BD-006", "name": "Betrawati", "lat": 27.95, "lng": 85.18, "elevation_m": 610, "status": "online", "battery_pct": 73, "last_seen": "2026-01-15T06:41:00Z"},
+    {"id": "BD-007", "name": "Nuwakot Downstream", "lat": 27.91, "lng": 85.17, "elevation_m": 570, "status": "online", "battery_pct": 88, "last_seen": "2026-01-15T06:42:00Z"}
+  ],
+  "settlements": [
+    {"id": "SET-01", "name": "Syabrubesi", "lat": 28.161, "lng": 85.281, "population": 4200, "nearest_node": "BD-002", "risk": "watch"},
+    {"id": "SET-02", "name": "Dhunche", "lat": 28.11, "lng": 85.29, "population": 3200, "nearest_node": "BD-003", "risk": "watch"},
+    {"id": "SET-03", "name": "Rasuwagadhi", "lat": 28.12, "lng": 85.36, "population": 1800, "nearest_node": "BD-004", "risk": "normal"},
+    {"id": "SET-04", "name": "Trishuli Bazaar", "lat": 27.99, "lng": 85.16, "population": 8500, "nearest_node": "BD-005", "risk": "critical"},
+    {"id": "SET-05", "name": "Betrawati", "lat": 27.95, "lng": 85.18, "population": 5100, "nearest_node": "BD-006", "risk": "normal"}
+  ],
+  "coverage_gaps": [
+    {"id": "GAP-01", "name": "Langtang access valley", "lat": 28.23, "lng": 85.43, "radius_km": 8.5, "severity": "high", "reason": "No active gateway; seasonal road access"},
+    {"id": "GAP-02", "name": "Upper Bhote Koshi", "lat": 28.18, "lng": 85.47, "radius_km": 6.2, "severity": "medium", "reason": "Intermittent cellular backhaul"},
+    {"id": "GAP-03", "name": "Nuwakot foothills", "lat": 27.88, "lng": 85.24, "radius_km": 5.1, "severity": "low", "reason": "Planned node installation"}
+  ]
+}

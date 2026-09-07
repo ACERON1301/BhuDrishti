@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>BhuDrishti Phone Sensor</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #131c2e;
+      --border: #1e3050;
+      --accent: #1d8cf8;
+      --warn: #f4a623;
+      --danger: #e74c3c;
+      --ok: #2ecc71;
+      --text: #e0e8f5;
+      --muted: #6b82a0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 40px;
+      gap: 14px;
+    }
+    header { text-align: center; }
+    header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+    header p  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .mode-bar {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      width: 100%; max-width: 420px;
+    }
+    .mode-btn {
+      flex: 1; padding: 10px 0; border: none;
+      background: transparent; color: var(--muted);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .mode-btn.active { background: var(--accent); color: #fff; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      width: 100%; max-width: 420px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;
+    }
+
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+    input[type=text] {
+      width: 100%; padding: 10px 12px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 14px;
+      margin-bottom: 10px; outline: none;
+    }
+    input[type=text]:focus { border-color: var(--accent); }
+
+    .hint {
+      font-size: 11px; color: var(--warn);
+      background: rgba(244,166,35,.08);
+      border: 1px solid rgba(244,166,35,.25);
+      border-radius: 6px; padding: 7px 10px; margin-bottom: 10px;
+    }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 13px; border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--muted); flex-shrink: 0;
+    }
+    .dot.ok     { background: var(--ok);     box-shadow: 0 0 6px var(--ok); }
+    .dot.warn   { background: var(--warn);   box-shadow: 0 0 6px var(--warn); }
+    .dot.danger { background: var(--danger); box-shadow: 0 0 6px var(--danger);
+                  animation: blink .6s infinite alternate; }
+    @keyframes blink { from {opacity:1} to {opacity:.3} }
+
+    canvas {
+      width: 100%; height: 80px; border-radius: 8px;
+      background: var(--bg); display: block; margin-bottom: 10px;
+    }
+    #qrCanvas {
+      width: 180px !important; height: 180px !important;
+      border-radius: 4px;
+    }
+    .progress-wrap {
+      height: 6px; background: var(--bg); border-radius: 3px;
+      overflow: hidden; margin-bottom: 12px;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent); border-radius: 3px;
+      transition: width .08s linear;
+    }
+
+    .btn-primary {
+      width: 100%; padding: 15px; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      background: var(--accent); color: #fff;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-primary:active  { transform: scale(.97); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    .stats {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 7px;
+      margin-bottom: 4px;
+    }
+    .stat-box {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 4px; text-align: center;
+    }
+    .stat-val { font-size: 16px; font-weight: 700; }
+    .stat-lbl { font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+    #log {
+      font-size: 11px; font-family: monospace; color: var(--muted);
+      height: 130px; overflow-y: auto;
+      background: var(--bg); border-radius: 8px; padding: 8px 10px;
+    }
+    #log .e   { line-height: 1.7; }
+    #log .ok  { color: var(--ok); }
+    #log .warn{ color: var(--warn); }
+    #log .err { color: var(--danger); }
+
+    footer { font-size: 11px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌊 BhuDrishti</h1>
+  <p>Phone Accelerometer → Flood Telemetry</p>
+</header>
+
+<div class="mode-bar">
+  <button class="mode-btn active" id="modeBLE"  onclick="setMode('ble')">📡 BLE → ESP32</button>
+  <button class="mode-btn"        id="modeWifi" onclick="setMode('wifi')">🌐 Direct WiFi</button>
+</div>
+
+<!-- BLE card -->
+<div class="card" id="bleCard">
+  <div class="card-title">Bluetooth — Phone → ESP32 → Laptop</div>
+  <div class="status-pill">
+    <span class="dot" id="bleDot"></span>
+    <span id="bleStatusText">Not connected</span>
+  </div>
+  <label>Node ID</label>
+  <input type="text" id="nodeIdBle" value="BD-001" placeholder="BD-001">
+  <button class="btn-primary" id="bleConnectBtn" onclick="bleConnect()">
+    Connect to ESP32 via Bluetooth
+  </button>
+</div>
+
+<!-- WiFi card -->
+<div class="card" id="wifiCard" style="display:none">
+  <div class="card-title">Direct WiFi — Phone → Laptop</div>
+
+  <div class="hint">
+    Connect both phone and laptop to the <strong>GLOF_Bridge</strong> WiFi the ESP32 broadcasts.
+    Laptop IP on that network is usually <strong>192.168.4.2</strong> — confirm with
+    <code>ipconfig</code> after connecting.
+  </div>
+
+  <label>Backend URL</label>
+  <input type="text" id="apiUrl" value="http://192.168.4.2:8000"
+         placeholder="http://192.168.4.2:8000">
+
+  <label>Node ID</label>
+  <input type="text" id="nodeIdWifi" value="BD-PHONE-01" placeholder="BD-PHONE-01">
+
+  <div class="status-pill">
+    <span class="dot" id="wifiDot"></span>
+    <span id="wifiStatusText">Tap Test Connection first</span>
+  </div>
+  <button class="btn-primary" onclick="testWifi()">Test Connection</button>
+</div>
+
+<!-- Sensor -->
+<div class="card">
+  <div class="card-title">Accelerometer preview</div>
+  <canvas id="waveCanvas"></canvas>
+  <div class="progress-wrap">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="stats">
+    <div class="stat-box"><div class="stat-val" id="statSamples">0</div><div class="stat-lbl">Samples</div></div>
+    <div class="stat-box"><div class="stat-val" id="statMag">—</div><div class="stat-lbl">Mag m/s²</div></div>
+    <div class="stat-box"><div class="stat-val" id="statPeak">—</div><div class="stat-lbl">Peak</div></div>
+    <div class="stat-box"><div class="stat-val" id="statSent">0</div><div class="stat-lbl">Sent</div></div>
+  </div>
+</div>
+
+<!-- Capture -->
+<div class="card">
+  <div class="card-title">Capture & Send</div>
+  <button class="btn-primary" id="captureBtn" onclick="startCapture()" disabled>
+    Tap to capture (1.6 s window)
+  </button>
+</div>
+
+<!-- QR code — scan to open this page on phone -->
+<div class="card" id="qrCard">
+  <div class="card-title">📱 Open on phone — scan this QR</div>
+  <div id="qrBox" style="display:flex;justify-content:center;padding:8px 0">
+    <canvas id="qrCanvas"></canvas>
+  </div>
+  <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="qrUrl"></div>
+</div>
+
+<!-- Log -->
+<div class="card">
+  <div class="card-title">Log</div>
+  <div id="log"></div>
+</div>
+
+<footer>Requires HTTPS or localhost (file:// works on Android Chrome)</footer>
+
+<script>
+// ── Startup check ────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if (location.protocol === 'file:') {
+    log('⚠ Opened as file:// — sensors blocked on Android Chrome. Serve via HTTP instead.', 'err');
+    showServeInstructions();
+  } else {
+    // Passive test: see if events fire within 1s (page just loaded, no user action needed on Android)
+    let count = 0;
+    const probe = () => count++;
+    window.addEventListener('devicemotion', probe, { passive: true });
+    setTimeout(() => {
+      window.removeEventListener('devicemotion', probe);
+      if (count > 0) {
+        log(`Sensor ready (${count} events/s detected passively)`, 'ok');
+        motionGranted = true;
+      } else {
+        log('Sensor not yet active — will check on first capture', 'warn');
+      }
+    }, 1000);
+  }
+});
+
+// ── BLE UUIDs — must match ESP32 sketch ─────────────────────────────────────
+const BLE_SERVICE    = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+const BLE_WRITE_CHAR = "beb5483e-36e1-4688-b7f5-ea07361b26a9";
+const BLE_MTU        = 182;
+
+// ── State ────────────────────────────────────────────────────────────────────
+let mode = 'ble';
+let bleChar = null, bleDevice = null;
+let wifiOk = false;
+let motionGranted = false;
+let capturing = false;
+let sampleBuffer = [];
+let captureInterval = null, captureTimeout = null;
+let lastMotionValue = 0;
+let sentCount = 0;
+
+const SAMPLE_TARGET  = 160;
+const CAPTURE_MS     = 2200;   // hard deadline — collect for 2.2 s then send whatever we have
+
+// ── Canvas ───────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('waveCanvas');
+const ctx2d  = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width  = canvas.offsetWidth  * devicePixelRatio;
+  canvas.height = canvas.offsetHeight * devicePixelRatio;
+  ctx2d.scale(devicePixelRatio, devicePixelRatio);
+  drawWave(sampleBuffer);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function drawWave(buf) {
+  const w = canvas.offsetWidth, h = canvas.offsetHeight;
+  ctx2d.clearRect(0, 0, w, h);
+  ctx2d.fillStyle = '#0b1120';
+  ctx2d.fillRect(0, 0, w, h);
+  // zero line
+  ctx2d.beginPath(); ctx2d.strokeStyle = '#1e3050'; ctx2d.lineWidth = 1;
+  ctx2d.moveTo(0, h/2); ctx2d.lineTo(w, h/2); ctx2d.stroke();
+  if (buf.length < 2) return;
+  const maxAmp = Math.max(1, ...buf.map(Math.abs));
+  const scale  = (h / 2 * 0.85) / maxAmp;
+  const step   = w / (buf.length - 1);
+  ctx2d.beginPath(); ctx2d.strokeStyle = '#1d8cf8'; ctx2d.lineWidth = 1.5;
+  buf.forEach((v, i) => {
+    const x = i * step, y = h/2 - v * scale;
+    i === 0 ? ctx2d.moveTo(x, y) : ctx2d.lineTo(x, y);
+  });
+  ctx2d.stroke();
+}
+
+// ── Log ──────────────────────────────────────────────────────────────────────
+function log(msg, cls = '') {
+  const div = document.getElementById('log');
+  const t   = new Date().toLocaleTimeString('en', {hour12:false});
+  const el  = document.createElement('div');
+  el.className = 'e ' + cls;
+  el.textContent = `[${t}] ${msg}`;
+  div.insertBefore(el, div.firstChild);
+  while (div.children.length > 80) div.removeChild(div.lastChild);
+}
+
+// ── Mode ─────────────────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeBLE').classList.toggle('active',  m === 'ble');
+  document.getElementById('modeWifi').classList.toggle('active', m === 'wifi');
+  document.getElementById('bleCard').style.display  = m === 'ble'  ? '' : 'none';
+  document.getElementById('wifiCard').style.display = m === 'wifi' ? '' : 'none';
+  refreshCaptureBtn();
+}
+
+function refreshCaptureBtn() {
+  const ready = mode === 'ble' ? bleChar !== null : wifiOk;
+  const btn = document.getElementById('captureBtn');
+  btn.disabled = !ready || capturing;
+  if (!capturing) btn.textContent = 'Tap to capture (1.6 s window)';
+}
+
+// ── Motion permission ────────────────────────────────────────────────────────
+// Android Chrome: DeviceMotionEvent fires automatically — no requestPermission().
+// iOS 13+: requestPermission() must be called from a user-gesture handler.
+// file:// URLs on Android Chrome block sensors — page must be on http/https.
+async function ensureMotionPermission() {
+  if (motionGranted) return true;
+
+  if (typeof DeviceMotionEvent === 'undefined') {
+    log('DeviceMotionEvent not supported in this browser', 'err');
+    return false;
+  }
+
+  // iOS only — Android Chrome does NOT have requestPermission and calling it throws
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    try {
+      const r = await DeviceMotionEvent.requestPermission();
+      if (r !== 'granted') {
+        log('Motion permission denied', 'err');
+        return false;
+      }
+    } catch (e) {
+      log('Permission prompt error: ' + e.message, 'err');
+      return false;
+    }
+  }
+
+  // Verify sensor is actually delivering data (catches file:// block on Android)
+  const working = await new Promise(resolve => {
+    let fired = false;
+    const check = (e) => {
+      const acc = e.accelerationIncludingGravity ?? e.acceleration;
+      if (acc && (acc.x !== null || acc.y !== null || acc.z !== null)) fired = true;
+    };
+    window.addEventListener('devicemotion', check, { once: true });
+    setTimeout(() => {
+      window.removeEventListener('devicemotion', check);
+      resolve(fired);
+    }, 500);
+  });
+
+  if (!working) {
+    const isFile = location.protocol === 'file:';
+    if (isFile) {
+      log('❌ file:// URL blocks sensors on Android Chrome. Serve via HTTP — see instructions below.', 'err');
+      showServeInstructions();
+    } else {
+      log('❌ Sensor not firing. Check: Site Settings → Motion sensors → Allow', 'err');
+    }
+    return false;
+  }
+
+  motionGranted = true;
+  log('Motion sensor active ✓', 'ok');
+  return true;
+}
+
+function showServeInstructions() {
+  const existing = document.getElementById('serveHint');
+  if (existing) return;
+  const div = document.createElement('div');
+  div.id = 'serveHint';
+  div.style.cssText = 'background:#1a0a00;border:1px solid #f4a623;border-radius:10px;padding:14px 16px;width:100%;max-width:420px;font-size:12px;line-height:1.7;color:#e0c080';
+  div.innerHTML = `
+    <strong style="color:#f4a623">📡 How to serve this file so sensors work:</strong><br><br>
+    On your laptop, run:<br>
+    <code style="background:#000;padding:2px 6px;border-radius:4px;display:block;margin:6px 0">
+      cd C:\\Users\\LOQ\\Documents\\BhuDrishti<br>
+      python -m http.server 8080 --bind 0.0.0.0
+    </code>
+    Then open on your phone:<br>
+    <code style="background:#000;padding:2px 6px;border-radius:4px;display:block;margin:6px 0">
+      http://&lt;YOUR-LAPTOP-IP&gt;:8080/phone_sensor_layer.html
+    </code>
+    Find your laptop IP: run <code>ipconfig</code> → IPv4 Address
+  `;
+  // Insert after the capture card
+  document.getElementById('captureBtn').closest('.card').after(div);
+}
+
+// ── devicemotion handler — attached once, always ─────────────────────────────
+function onMotion(evt) {
+  // Use accelerationIncludingGravity for raw sensor, fallback to acceleration
+  const acc = evt.accelerationIncludingGravity ?? evt.acceleration;
+  if (!acc || (acc.x === null && acc.y === null && acc.z === null)) return;
+
+  const x = acc.x ?? 0, y = acc.y ?? 0, z = acc.z ?? 0;
+  // Net magnitude (gravity-subtracted): sqrt(x²+y²+z²) − g
+  const mag = Math.sqrt(x*x + y*y + z*z);
+  const val = mag - 9.81;
+  lastMotionValue = val;
+
+  if (!capturing) return;
+
+  sampleBuffer.push(val);
+
+  // Live stats update
+  document.getElementById('statSamples').textContent = sampleBuffer.length;
+  document.getElementById('statMag').textContent = Math.abs(val).toFixed(1);
+  const peak = Math.max(...sampleBuffer.map(Math.abs));
+  document.getElementById('statPeak').textContent = peak.toFixed(2);
+
+  // Live waveform + progress
+  drawWave(sampleBuffer);
+  const pct = Math.min(100, sampleBuffer.length / SAMPLE_TARGET * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Done when we hit target
+  if (sampleBuffer.length >= SAMPLE_TARGET) endCapture('target reached');
+}
+window.addEventListener('devicemotion', onMotion, { passive: true });
+
+// ── BLE ──────────────────────────────────────────────────────────────────────
+function setBleStatus(txt, dot) {
+  document.getElementById('bleStatusText').textContent = txt;
+  document.getElementById('bleDot').className = 'dot ' + (dot || '');
+}
+
+async function bleConnect() {
+  if (!navigator.bluetooth) {
+    log('Web Bluetooth not available — use Chrome on Android', 'err'); return;
+  }
+  setBleStatus('Scanning…', 'warn');
+  try {
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'GLOF_Bridge_BLE' }],
+      optionalServices: [BLE_SERVICE]
+    });
+    bleDevice.addEventListener('gattserverdisconnected', () => {
+      bleChar = null;
+      setBleStatus('Disconnected', '');
+      log('BLE disconnected', 'warn');
+      refreshCaptureBtn();
+    });
+    const srv  = await bleDevice.gatt.connect();
+    const svc  = await srv.getPrimaryService(BLE_SERVICE);
+    bleChar    = await svc.getCharacteristic(BLE_WRITE_CHAR);
+    setBleStatus('Connected: ' + bleDevice.name, 'ok');
+    log('BLE ready → ' + bleDevice.name, 'ok');
+    document.getElementById('bleConnectBtn').textContent = 'Reconnect';
+    refreshCaptureBtn();
+  } catch (e) {
+    setBleStatus('Connection failed', '');
+    log('BLE: ' + e.message, 'err');
+  }
+}
+
+async function bleSend(str) {
+  const bytes = new TextEncoder().encode(str);
+  for (let off = 0; off < bytes.length; off += BLE_MTU) {
+    await bleChar.writeValueWithoutResponse(bytes.slice(off, off + BLE_MTU));
+    await new Promise(r => setTimeout(r, 20));
+  }
+}
+
+// ── WiFi ─────────────────────────────────────────────────────────────────────
+function setWifiStatus(txt, dot) {
+  document.getElementById('wifiStatusText').textContent = txt;
+  document.getElementById('wifiDot').className = 'dot ' + (dot || '');
+}
+
+async function testWifi() {
+  const url = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
+  if (url.includes('192.168.1.x') || !url.startsWith('http')) {
+    log('Replace the IP placeholder with your actual laptop IP first', 'err'); return;
+  }
+  setWifiStatus('Testing…', 'warn');
+  try {
+    const r = await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(6000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    wifiOk = true;
+    setWifiStatus(`Connected — ${d.nodes} nodes`, 'ok');
+    log(`Backend OK: ${d.nodes} nodes, supabase=${d.supabase}`, 'ok');
+    refreshCaptureBtn();
+  } catch (e) {
+    wifiOk = false;
+    setWifiStatus('Failed', '');
+    log('WiFi test: ' + e.message + ' — check IP and that uvicorn is running', 'err');
+  }
+}
+
+// ── Capture ──────────────────────────────────────────────────────────────────
+async function startCapture() {
+  if (capturing) return;
+
+  // Permission must be requested from within the user-gesture handler (this function)
+  const ok = await ensureMotionPermission();
+  if (!ok) return;
+
+  capturing = true;
+  sampleBuffer = [];
+  document.getElementById('captureBtn').disabled = true;
+  document.getElementById('captureBtn').textContent = '⏺ Capturing…';
+  document.getElementById('statSamples').textContent = '0';
+  document.getElementById('statMag').textContent = '—';
+  document.getElementById('statPeak').textContent = '—';
+  document.getElementById('progressFill').style.width = '0%';
+  log('Capturing — move/shake phone now');
+
+  // Hard timeout — send whatever collected after CAPTURE_MS even if under target
+  captureTimeout = setTimeout(() => endCapture('timeout'), CAPTURE_MS);
+}
+
+function endCapture(reason) {
+  if (!capturing) return;
+  capturing = false;
+  clearTimeout(captureTimeout);
+
+  log(`Capture done (${reason}): ${sampleBuffer.length} samples`);
+  document.getElementById('captureBtn').textContent = '⏳ Sending…';
+
+  if (sampleBuffer.length < 8) {
+    log('Too few samples — sensor may not be active. Try a different browser or grant motion permission.', 'err');
+    resetBtn();
+    return;
+  }
+
+  // Pad to SAMPLE_TARGET if short (repeat last value — classifier needs ≥8, 160 preferred)
+  while (sampleBuffer.length < SAMPLE_TARGET) sampleBuffer.push(sampleBuffer.at(-1) ?? 0);
+  drawWave(sampleBuffer);
+
+  sendWindow();
+}
+
+async function sendWindow() {
+  const nodeId = mode === 'ble'
+    ? document.getElementById('nodeIdBle').value.trim()  || 'BD-PHONE-01'
+    : document.getElementById('nodeIdWifi').value.trim() || 'BD-PHONE-01';
+
+  let battery = 100;
+  if (navigator.getBattery) {
+    battery = await navigator.getBattery()
+      .then(b => Math.round(b.level * 100))
+      .catch(() => 100);
+  }
+
+  const payload = {
+    node_id: nodeId,
+    sensor_window: sampleBuffer.slice(0, SAMPLE_TARGET),
+    source: 'phone_layer',
+    battery_pct: battery
+  };
+
+  try {
+    if (mode === 'ble') {
+      await bleSendPayload(payload);
+    } else {
+      await wifiSendPayload(payload);
+    }
+  } catch (e) {
+    log('Send error: ' + e.message, 'err');
+  }
+  resetBtn();
+}
+
+function resetBtn() {
+  capturing = false;
+  document.getElementById('progressFill').style.width = '0%';
+  refreshCaptureBtn();
+}
+
+async function bleSendPayload(payload) {
+  if (!bleChar) { log('BLE not connected', 'err'); return; }
+  const json = JSON.stringify(payload) + '\n';
+  log(`BLE tx: ${json.length} bytes…`);
+  await bleSend(json);
+  sentCount++;
+  document.getElementById('statSent').textContent = sentCount;
+  log(`BLE sent #${sentCount} — ESP32 forwards to /api/ingest`, 'ok');
+}
+
+async function wifiSendPayload(payload) {
+  const url = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
+  log(`POST → ${url}/api/ingest`);
+  const r = await fetch(`${url}/api/ingest`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(9000)
+  });
+  if (!r.ok) {
+    const body = await r.text().catch(() => '');
+    throw new Error(`HTTP ${r.status}: ${body.slice(0, 120)}`);
+  }
+  const data = await r.json();
+  sentCount++;
+  document.getElementById('statSent').textContent = sentCount;
+  const cls  = data.classification?.classification ?? '?';
+  const pct  = data.classification?.confidence != null
+    ? (data.classification.confidence * 100).toFixed(0) + '%' : '';
+  const conf = data.confirmation ?? '';
+  log(`✓ ${data.node_id}: ${cls} ${pct} | ${conf}`, cls === 'event' ? 'warn' : 'ok');
+}// ── QR code — pure JS, no CDN needed ────────────────────────────────────────
+// Minimal QR encoder (Mode: byte, ECC: M) — self-contained, no network required
+(function(){
+  // Tiny QR library inline — based on qrcodejs core logic, MIT license
+  // Only what we need: version auto-select, byte mode, ECC-M, canvas render
+  const QR_VERSIONS = [null,
+    [26,0],[44,7],[70,7],[100,7],[134,7],[172,7],[196,0],[242,0],[292,0],[346,0],
+    [404,0],[466,0],[532,0],[581,0],[655,0],[733,0],[815,0],[901,0],[991,0],[1085,0]
+  ];
+  function getVersion(len) {
+    for (let v = 1; v <= 20; v++) if (QR_VERSIONS[v][0] >= len + 2) return v;
+    return 20;
+  }
+
+  // Use qrcode-generator CDN with a local fallback canvas message
+  function buildQR() {
+    const pageUrl = location.protocol === 'file:'
+      ? 'http://192.168.4.2:8080/phone_sensor_layer.html'
+      : location.href;
+
+    document.getElementById('qrUrl').textContent = pageUrl;
+
+    const cnv = document.getElementById('qrCanvas');
+    const ctx = cnv.getContext('2d');
+
+    // Try to use the already-loaded QRCode lib first (may have loaded on retry)
+    if (typeof QRCode !== 'undefined') {
+      renderWithLib(pageUrl);
+      return;
+    }
+
+    // Draw the URL as text so at least the address is visible
+    cnv.width = 300; cnv.height = 60;
+    ctx.fillStyle = '#0b1120';
+    ctx.fillRect(0,0,300,60);
+    ctx.fillStyle = '#f4a623';
+    ctx.font = '11px monospace';
+    ctx.fillText('Open on your laptop browser:', 8, 18);
+    ctx.fillStyle = '#e0e8f5';
+    ctx.font = 'bold 12px monospace';
+    // Wrap long URL
+    const parts = pageUrl.match(/.{1,38}/g) || [pageUrl];
+    parts.forEach((p,i) => ctx.fillText(p, 8, 36 + i*16));
+
+    // Retry CDN once more (in case it was a timing issue)
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload = () => {
+      cnv.width = 180; cnv.height = 180;
+      ctx.clearRect(0,0,180,180);
+      renderWithLib(pageUrl);
+    };
+    document.head.appendChild(s);
+  }
+
+  function renderWithLib(url) {
+    // QRCode lib renders into a container div, not directly onto our canvas
+    const tmp = document.createElement('div');
+    new QRCode(tmp, {
+      text: url, width: 180, height: 180,
+      colorDark: '#e0e8f5', colorLight: '#0b1120',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    // QRCode appends a canvas child — copy it to our canvas
+    setTimeout(() => {
+      const src = tmp.querySelector('canvas');
+      if (!src) return;
+      const cnv = document.getElementById('qrCanvas');
+      cnv.width = src.width; cnv.height = src.height;
+      cnv.getContext('2d').drawImage(src, 0, 0);
+    }, 100);
+  }
+
+  window.addEventListener('load', buildQR);
+})();
+</script>
+</body>
+</html>

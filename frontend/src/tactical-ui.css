@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  --surface: #0e141b;
+  --surface-lowest: #090f16;
+  --surface-low: #161c23;
+  --surface-card: #1a2027;
+  --surface-high: #252a32;
+  --line: #2f353d;
+  --text: #dde3ed;
+  --muted: #bacbbf;
+  --outline: #84958a;
+  --primary: #6effc3;
+  --primary-container: #00e5a3;
+  --secondary: #95ccff;
+  --tertiary: #ffbc78;
+  --error: #ffb4ab;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--surface); color: var(--text); font-family: Outfit, sans-serif; }
+.app-shell { background: var(--surface); }
+.gradient-waves { opacity: .05; }
+
+.tactical-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 64px;
+  padding: 0 16px;
+  gap: 18px;
+  background: #090f16e8;
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 8px #0008;
+  backdrop-filter: blur(18px);
+}
+.brand { min-width: 290px; gap: 9px; }
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-high);
+  color: var(--primary);
+  font-size: 21px;
+  transform: none;
+}
+.brand strong, .defcon, .tactical-time, .tactical-topbar nav, .connection, .eyebrow,
+.unit, .legend, .model-tag, footer, .event-badge, .event time, .node-info small,
+.battery, .simulator label, .map-hud {
+  font-family: 'DM Mono', monospace;
+}
+.brand strong { color: var(--primary); font-size: 10px; letter-spacing: .08em; }
+.brand span { color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: .03em; }
+.tactical-time { color: var(--text); font-size: 10px; white-space: nowrap; }
+.tactical-time b { color: var(--outline); margin: 0 6px; }
+.tactical-time .connection { display: inline-flex; margin-left: 12px; padding: 4px 7px; background: var(--surface-card); color: var(--primary); }
+.tactical-time .connection i { width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: currentColor; }
+.tactical-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.defcon { padding: 5px 9px; color: var(--tertiary); background: #ffbc7826; font-size: 9px; white-space: nowrap; }
+.tactical-topbar nav { display: flex; gap: 2px; padding: 2px; background: var(--surface-low); border-radius: 10px; }
+.tactical-topbar nav button { padding: 7px 9px; border: 0; color: var(--muted); background: transparent; font: inherit; font-size: 9px; white-space: nowrap; cursor: pointer; }
+.tactical-topbar nav button:hover { color: var(--text); background: var(--surface-high); border-radius: 7px; }
+.tactical-topbar nav button.active { color: #003825; background: var(--primary-container); border-radius: 7px; font-weight: 700; }
+
+.content { max-width: 1600px; padding: 26px 16px 34px; }
+.headline { min-height: 360px; margin-bottom: 18px; padding: 18px 0 26px; background: var(--surface); }
+.headline-copy { padding: 28px 30px 0 0; background: var(--surface); }
+.headline-copy h1 { color: var(--text); font-size: clamp(32px, 4vw, 48px); line-height: 1.04; letter-spacing: -.04em; }
+.headline-copy h1 em { color: var(--primary); }
+.headline-note { color: var(--muted); }
+.headline .globe-background { opacity: .38; }
+
+.metrics { background: var(--surface-low); border-color: var(--line); }
+.metric { padding: 14px 16px; border-color: var(--line); }
+.metric strong { color: var(--primary); font: 600 28px 'DM Mono', monospace; }
+.metric:nth-child(2) strong { color: var(--tertiary); }
+.metric:nth-child(3) strong { color: var(--error); }
+.metric small, .metric div span { color: var(--muted); }
+
+.panel { background: var(--surface-card); border: 0; border-radius: 6px; box-shadow: 0 3px 14px #0005; }
+.panel-head { padding: 15px 16px 12px; }
+.panel h2 { color: var(--text); font-size: 16px; }
+.eyebrow { color: var(--primary); font-size: 9px; letter-spacing: .08em; }
+.unit, .legend, .model-tag { color: var(--outline); }
+.map-wrap { border-top-color: var(--line); }
+.map-hud { position: absolute; z-index: 500; top: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(#090f16ed, transparent); font-size: 9px; }
+.map-modes, .map-filters { display: flex; flex-wrap: wrap; gap: 4px; }
+.map-modes b, .map-modes span, .map-filters i { padding: 6px 8px; border-radius: 4px; font-style: normal; }
+.map-modes b { color: #003825; background: var(--primary-container); }
+.map-modes span { color: var(--muted); background: var(--surface-high); }
+.map-filters { margin-top: 8px; }
+.map-filters i { color: var(--primary); background: #00e5a31c; }
+.map-filters i:nth-child(2) { color: var(--tertiary); background: #ffbc781c; }
+.map-filters i:nth-child(3) { color: var(--secondary); background: #95ccff1c; }
+.leaflet-container { background: #0e141b; }
+.leaflet-tile { filter: brightness(.58) saturate(.55) hue-rotate(150deg); }
+.waveform, .node-list { background: var(--surface-card); }
+.event, .node-row { border-color: var(--line); }
+.node-row:hover, .node-row.selected { background: var(--surface-high); }
+.node-icon { color: var(--primary); background: #00e5a31c; }
+.node-icon.critical { color: var(--error); background: #ffb4ab1c; }
+.simulate { border-color: var(--primary); background: #00e5a31c; color: var(--primary); border-radius: 5px; }
+.simulator select { background: var(--surface-lowest); border-color: var(--line); }
+.event-badge.normal { color: var(--primary); background: #00e5a31c; }
+.event-badge.critical { color: var(--error); background: #ffb4ab1c; }
+
+@media (max-width: 1180px) {
+  .tactical-time, .defcon { display: none; }
+  .tactical-actions { margin-left: auto; }
+  .tactical-topbar nav button:nth-child(n+3) { display: none; }
+}
+@media (max-width: 700px) {
+  .brand { min-width: 0; }
+  .brand span { display: none; }
+  .tactical-topbar nav { display: none; }
+  .content { padding: 18px 10px 26px; }
+  .headline { min-height: 300px; }
+}

@@ -1,0 +1,38 @@
+/* Keep dashboard columns aligned to their own content instead of stretching. */
+.dashboard-grid,
+.bottom-grid {
+  align-items: start;
+}
+
+.dashboard-grid > .map-card,
+.dashboard-grid > .side-column,
+.bottom-grid > .panel {
+  align-self: start;
+}
+
+.map-card {
+  height: max-content;
+}
+
+.map-wrap {
+  height: clamp(390px, 34vw, 520px);
+}
+
+.side-column {
+  min-width: 0;
+}
+
+.waveform {
+  height: 290px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid,
+  .bottom-grid {
+    align-items: stretch;
+  }
+
+  .map-wrap {
+    height: 390px;
+  }
+}
